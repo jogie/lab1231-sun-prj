@@ -7,3 +7,5 @@ vlfeat-0.9.19
 opengm-2.3.3
 rapidxml-1.13
 VOCdevkit
+region-descriptor
+region-detector
