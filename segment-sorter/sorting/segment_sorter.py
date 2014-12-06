@@ -85,10 +85,10 @@ def rank_segment(prob_word_segments, model_LDA_file, n_topic):
             model_LDA[row][col] = float(model_LDA[row][col])
 
     model_LDA = [row[1:len(row)-1] for row in model_LDA] #remove element null
-
-    for topic in range(n_topic):
-        for index_segment in range(len(prob_word_segments)):
-            result[(index_segment, topic)] = KLD(model_LDA[topic], prob_word_segments[index_segment])
+    for index_segment in range(len(prob_word_segments)):
+        result[index_segment] = []
+        for topic in range(n_topic):
+            result[index_segment].append(KLD(model_LDA[topic], prob_word_segments[index_segment]))
     return result
 
 def main():
@@ -97,7 +97,8 @@ def main():
     image_path = img_dir + target + '.ppm'
     haraff_file = haraff_dir+ target + '.haraff'
     sift_file = sift_dir + target + '.sift'
-    superpixel_file = '/home/jogie/sun4/exp/overlap-segment/superpixel-3/3_12_s/3_12_s-slic-5-10-1.csv'
+    # superpixel_file = '/home/jogie/sun4/exp/overlap-segment/superpixel-3/3_12_s/3_12_s-slic-5-10-1.csv'
+    superpixel_file = '/home/jogie/sun4/exp/overlap-segment/superpixel-3/3_12_s/3_12_s-slic-7-10-1.csv'
     model_LDA_file = '/home/jogie/sorter_exp/lda-model/run.20141206.124333/model-final.phi'
 
     list_sift = sift_file2list(sift_file)
@@ -110,7 +111,9 @@ def main():
     prob_word_segments = calculate_prob_word_given_segment(list_word, center_region, segments) #dict key : index segment
 
     result = rank_segment(prob_word_segments, model_LDA_file, 21)
-    print result
+    for index_segment in range(len(result)):
+        print '-----'
+        print result[index_segment]
 
 if __name__ == "__main__":
     main();
