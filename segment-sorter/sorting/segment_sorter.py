@@ -19,6 +19,9 @@ from skimage import io
 img_dir = '/home/jogie/sun3/dataset/msrc/unmix/Images/ppm/'
 haraff_dir = '/home/jogie/sorter_exp/haraff/'
 sift_dir = '/home/jogie/sorter_exp/sift/'
+param_segment_dir = '/home/jogie/sun4/exp/overlap-segment/superpixel-3'
+kmeans_file = "/home/jogie/sorter_exp/kmeans-model/kmeans.20141207.1326.model"
+model_LDA_file = '/home/jogie/sorter_exp/lda-model/training.20141207.093541/model-final.phi'
 
 def sift_file2list(sift_file):
     with open(sift_file) as f:
@@ -42,6 +45,10 @@ def normalize_hist(word_hist, n_element, epsilon=0.00001):
     normal_hist = {}
     n_non_zero = len(word_hist)
     n_zero = n_element - n_non_zero
+    if n_zero == n_element:
+        for i in range(n_element):
+            normal_hist[i] = 1.0 / float(n_element)
+        return normal_hist
     for i in range(n_element):
         if i in word_hist:
             normal_hist[i] = word_hist[i] - (float(epsilon*n_zero)/float(n_non_zero))
@@ -63,8 +70,9 @@ def calculate_prob_word_given_segment(list_word, center_region, segments):
         print 'word in segment', word_in_segment
         for word in set(word_in_segment):
             word_hist[word] = float(len([w for w in word_in_segment if w == word])) / float(len(word_in_segment))
-        normalize_word_hist = normalize_hist(word_hist, 10)
-        prob_word_segment[index_segment] = normalize_word_hist
+        normalize_word_hist = normalize_hist(word_hist, 2000)
+        if len(word_in_segment) != 0: 
+            prob_word_segment[index_segment] = normalize_word_hist
         index_segment += 1
     return prob_word_segment
 
@@ -80,40 +88,48 @@ def rank_segment(prob_word_segments, model_LDA_file, n_topic):
         reader = csv.reader(f, delimiter=' ')
         model_LDA = list(reader)
 
+    model_LDA = [row[0:len(row)-1] for row in model_LDA] #remove element null
     for row in range(len(model_LDA)):
-        for col in range(len(model_LDA[row])-1):
+        for col in range(len(model_LDA[row])):
             model_LDA[row][col] = float(model_LDA[row][col])
 
-    model_LDA = [row[1:len(row)-1] for row in model_LDA] #remove element null
-    for index_segment in range(len(prob_word_segments)):
+    for index_segment in prob_word_segments:
         result[index_segment] = []
         for topic in range(n_topic):
-            result[index_segment].append(KLD(model_LDA[topic], prob_word_segments[index_segment]))
+            result[index_segment].append(KLD(prob_word_segments[index_segment], model_LDA[topic]))
+    return result
+
+def prob_topic_segments(param):
+    kmeans = pickle.load( open(param['kmeans_file'], "rb" ) )
+    list_sift = sift_file2list(param['sift_file'])
+    
+    list_word = [kmeans.predict(el_sift) for el_sift in list_sift]
+    list_word = [a[0] for a in list_word] #second element is dtype, ignore
+
+    center_region = get_center_region(param['haraff_file'])
+    segments = csv2ListOfSegment(param['superpixel_file'])
+
+    prob_word_segments = calculate_prob_word_given_segment(list_word, center_region, segments) #dict key : index segment
+    
+    result = rank_segment(prob_word_segments, param['model_LDA_file'], 21)
     return result
 
 def main():
-    target = '3_12_s'
-    kmeans = pickle.load( open( "/home/jogie/sorter_exp/kmeans-model/test.kmeans", "rb" ) )
-    image_path = img_dir + target + '.ppm'
-    haraff_file = haraff_dir+ target + '.haraff'
-    sift_file = sift_dir + target + '.sift'
-    # superpixel_file = '/home/jogie/sun4/exp/overlap-segment/superpixel-3/3_12_s/3_12_s-slic-5-10-1.csv'
-    superpixel_file = '/home/jogie/sun4/exp/overlap-segment/superpixel-3/3_12_s/3_12_s-slic-7-10-1.csv'
-    model_LDA_file = '/home/jogie/sorter_exp/lda-model/run.20141206.124333/model-final.phi'
-
-    list_sift = sift_file2list(sift_file)
-    list_word = [kmeans.predict(el_sift) for el_sift in list_sift]
-    
-    list_word = [a[0] for a in list_word]
-    center_region = get_center_region(haraff_file)
-    segments = csv2ListOfSegment(superpixel_file)
-
-    prob_word_segments = calculate_prob_word_given_segment(list_word, center_region, segments) #dict key : index segment
-
-    result = rank_segment(prob_word_segments, model_LDA_file, 21)
-    for index_segment in range(len(result)):
-        print '-----'
-        print result[index_segment]
+    list_target = ['3_12_s']
+    list_param_segment = ['slic-7-10-1', 'slic-3-10-1', 'slic-5-10-1', 'slic-7-10-1', 'slic-9-10-1', 'slic-11-10-1', 'slic-13-10-1', 'slic-3-20-1', 'slic-5-20-1', 'slic-7-20-1', 'slic-9-20-1', 'slic-11-20-1', 'slic-13-20-1']
+    all_result = {}
+    for target in list_target:
+        all_result[target] = {}
+        for param_segment in list_param_segment:
+            print '------ ',param_segment, '-----------'
+            param = {}
+            param['haraff_file'] = haraff_dir+ target + '.haraff'
+            param['sift_file'] = sift_dir + target + '.sift'
+            param['superpixel_file'] = param_segment_dir+'/'+target+'/'+target+'-'+param_segment+'.csv'
+            param['kmeans_file'] = kmeans_file
+            param['model_LDA_file'] = model_LDA_file
+            all_result[target][param_segment] = prob_topic_segments(param)
+    print all_result
 
 if __name__ == "__main__":
     main();
