@@ -14,7 +14,9 @@ Format:
 from os import listdir
 from os.path import isfile, join
 import sys
+sys.path.append('/home/jogie/git-jogie/lab1231-sun-prj/segment-sorter/common')
 import segment_sorter_util as util
+
 
 def get_contained_region(regions, segment):
     '''
@@ -72,19 +74,19 @@ def main(argv):
             segments = util.get_segment_from_supfile(segmentation_filepath)
 
             for segment in segments:# NOTE: _only_ segments that contain region become documents
-                doc = {}
-                
-                contained_regions = get_contained_region(regions, segment['pixels'])            
-                if len(contained_regions) != 0:
-                    words = ['word'+str(region['label']) for region in contained_regions]
+                if len(segment['pixels']) >= 1000:
+                    doc = {}
+                    contained_regions = get_contained_region(regions, segment['pixels'])            
+                    if len(contained_regions) != 0:
+                        words = ['word'+str(region['label']) for region in contained_regions]
 
-                    meta = {}
-                    meta['segmentation_filename'] = segmentation_filename
-                    meta['segment_id'] = segment['id']
+                        meta = {}
+                        meta['segmentation_filename'] = segmentation_filename
+                        meta['segment_id'] = segment['id']
 
-                    doc['words'] = words
-                    doc['meta'] = meta
-                    corpus.append(doc)
+                        doc['words'] = words
+                        doc['meta'] = meta
+                        corpus.append(doc)
 
     print('n_document(=n_segment)= %i' % (len(corpus)))
     corpus_filepath = argv[4]

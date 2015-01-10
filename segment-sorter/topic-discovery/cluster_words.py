@@ -13,6 +13,8 @@ import sys
 import numpy as np
 import cPickle
 from sklearn.cluster import KMeans
+import sys
+sys.path.append('/home/jogie/git-jogie/lab1231-sun-prj/segment-sorter/common')
 import segment_sorter_util as util
 
 def read_region_from_list(list_filepath, region_dir):
@@ -68,7 +70,6 @@ def main(argv):
     region_list = read_region_from_list(list_filepath, region_dir)
 
     # Cluster
-    # TODO: preprocess?
     X = np.asarray( [ i['sift'] for i in region_list ] )
     np.savetxt(X_filepath, X, delimiter=",")
     print('n_sample= %i' % (X.shape[0]))

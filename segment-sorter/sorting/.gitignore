@@ -3,3 +3,5 @@ build
 coba
 coba2
 a.out
+*.txt
+temp

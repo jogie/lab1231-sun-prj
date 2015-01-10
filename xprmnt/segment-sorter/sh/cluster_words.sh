@@ -1,9 +1,11 @@
 #!/bin/sh
 #
-root_dir=/home/tor/sun4/xprmnt/segment-sorter
+
 timestamp="$(date +'%Y%m%d.%H%M%S')"
-dataset=msrc21
+dataset=voc2010
 region_desc=sift
+
+root_dir=/home/jogie/sorter_exp/lda-model-$dataset
 
 #
 list_filepath=$root_dir/meta/$dataset.$region_desc.list

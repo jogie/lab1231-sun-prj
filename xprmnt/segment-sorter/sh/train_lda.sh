@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-root_dir=/home/tor/xprmnt/segment-sorter
+root_dir=/home/jogie/sorter_exp/lda-model
 timestamp="$(date +'%Y%m%d.%H%M%S')"
 dataset=msrc21
 
 #
-corpus_name=corpus.20141208.165442
+corpus_name=corpus.20141221.145856
 corpus_dir=$root_dir/corpus/$dataset
 tr_data_filepath=$corpus_dir/$corpus_name.data
 tr_metadata_filepath=$corpus_dir/$corpus_name.meta

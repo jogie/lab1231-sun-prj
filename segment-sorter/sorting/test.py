@@ -5,7 +5,7 @@ from util_region import csvToListOfSegment
 # print csvToListOfSegment('/home/jogie/sun4/exp/overlap-segment/superpixel-3/9_9_s/9_9_s-slic-13-10-1.csv')
 
 # target_listpath_msrc = '/home/jogie/sun3/dataset/msrc/unmix/Images/list.txt'
-target_listpath = '/home/jogie/sun4/exp/segment-sorter/meta/voc.list'
+target_listpath = '/home/jogie/sun4/exp/segment-sorter/meta/voc600.txt'
 
 # img_dir_msrc = '/home/jogie/sun3/dataset/msrc/unmix/Images/ppm/'
 img_dir = '/home/jogie/sun3/dataset/voc2010/Images/ppm/'
